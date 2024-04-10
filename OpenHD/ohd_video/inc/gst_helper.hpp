@@ -616,7 +616,7 @@ static std::string createV4l2SrcRawAndSwEncodeStream(
     const std::string& device_node, const CameraSettings& settings) {
   std::stringstream ss;
   ss << fmt::format("v4l2src device={} ! ", device_node);
-  ss << "video/x-raw";
+  ss << "image/jpeg";
   ss << gst_v4l2_width_height_fps_unless_omit(settings);
   ss << " ! ";
   ss << "videoconvert ! ";
