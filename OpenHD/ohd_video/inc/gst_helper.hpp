@@ -531,8 +531,8 @@ static std::string createRockchipV4L2Pipeline(const int video_dev,
                                               const int framerate) {
   std::stringstream ss;
   ss << "v4l2src device=/dev/video" << video_dev
-     << " io-mode=auto do-timestamp=true ! video/x-raw,format=NV12, ";
-  ss << "framerate=" << framerate << "/1 ! ";
+     << " io-mode=auto do-timestamp=true ! image/jpeg, ";
+  ss << "framerate=" << framerate << "/1 ! jpegparse ! mppjpegdec ! video/x-raw, format=NV12 ! ";
   return ss.str();
 }
 
@@ -618,12 +618,12 @@ static std::string createV4l2SrcRawAndSwEncodeStream(
   ss << fmt::format("v4l2src device={} ! ", device_node);
   ss << "image/jpeg";
   ss << gst_v4l2_width_height_fps_unless_omit(settings);
-  ss << " ! ";
+  ss << " ! jpegparse ! jpegdec ! ";
   ss << "videoconvert ! ";
   // Add a queue here. With sw we are not low latency anyways.
-  ss << "queue ! ";
+  //ss << "queue ! ";
   // For some reason gstreamer can't automatically figure things out here
-  ss << "video/x-raw, format=I420 ! ";
+  //ss << "video/x-raw, format=I420 ! ";
   ss << createSwEncoder(settings);
   return ss.str();
 }
