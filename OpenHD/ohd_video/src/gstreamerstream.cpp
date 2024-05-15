@@ -127,6 +127,9 @@ std::string GStreamerStream::create_source_encode_pipeline(
   } else if (camera.camera_type == X_CAM_TYPE_DEVELOPMENT_FILESRC) {
     pipeline << OHDGstHelper::create_dummy_filesrc_stream(
         OHDPlatform::instance(), setting);
+  } else if (camera.camera_type == X_CAM_TYPE_CUSTOM_GSTIR) {
+    pipeline << OHDGstHelper::createGSTIRStream(OHDPlatform::instance(),
+                                                setting);
   } else {
     openhd::log::get_default()->warn("UNKNOWN CAMERA TYPE");
     pipeline << "ERROR";

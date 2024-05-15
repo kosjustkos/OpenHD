@@ -88,6 +88,11 @@ static constexpr int X_CAM_TYPE_ROCK_RK3566_PLACEHOLDER2 = 83;
 static constexpr int X_CAM_TYPE_OPENIPC_SOMETHING = 90;
 //
 
+// Custom cameras starts here
+// GSTiR thermal camera
+static constexpr int X_CAM_TYPE_CUSTOM_GSTIR = 240;
+//
+
 // ... rest is reserved for future use
 // no camera, only exists to have a default value for secondary camera (which is
 // disabled by default). NOTE: The primary camera cannot be disabled !
@@ -158,6 +163,8 @@ static std::string x_cam_type_to_string(int camera_type) {
       return "DISABLED";
     case X_CAM_TYPE_OPENIPC_SOMETHING:
       return "OPENIPC_X";
+    case X_CAM_TYPE_CUSTOM_GSTIR:
+      return "CUSTOM_GSTIR";
     default:
       break;
   }
@@ -311,6 +318,10 @@ struct XCamera {
       ret.push_back(ResolutionFramerate{848, 480, 30});
       ret.push_back(ResolutionFramerate{1280, 720, 30});
       ret.push_back(ResolutionFramerate{1920, 1080, 30});
+      return ret;
+    } else if (camera_type == X_CAM_TYPE_CUSTOM_GSTIR) {
+      std::vector<ResolutionFramerate> ret;
+      ret.push_back(ResolutionFramerate{640, 512, 30});
       return ret;
     } else if (camera_type == X_CAM_TYPE_ROCK_HDMI_IN) {
       // Standard hdmi in resolutions for now
@@ -519,8 +530,13 @@ static std::vector<ManufacturerForPlatform> get_camera_choices_for_platform(
     std::vector<CameraNameAndType> hdmi_cameras{
         CameraNameAndType{"HDMI IN", X_CAM_TYPE_ROCK_HDMI_IN},
     };
+    std::vector<CameraNameAndType> custom_cameras{
+        CameraNameAndType{"GSTiR", X_CAM_TYPE_CUSTOM_GSTIR},
+    };
     return std::vector<ManufacturerForPlatform>{
-        ManufacturerForPlatform{"HDMI IN", hdmi_cameras}, MANUFACTURER_USB,
+        ManufacturerForPlatform{"CUSTOM", custom_cameras},
+        ManufacturerForPlatform{"HDMI IN", hdmi_cameras},
+		MANUFACTURER_USB,
         MANUFACTURER_DEBUG};
   } else if (platform_type == X_PLATFORM_TYPE_X86) {
     return std::vector<ManufacturerForPlatform>{MANUFACTURER_USB,

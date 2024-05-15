@@ -608,6 +608,25 @@ static std::string gst_v4l2_width_height_fps_unless_omit(
   return ss.str();
 }
 
+static std::string createHwOrSwEncoder(const OHDPlatform& platform,
+                                       const CameraSettings& settings) {
+  if (settings.force_sw_encode) {
+    return createSwEncoder(settings);
+  } else {
+    if (platform.is_rpi()) {
+      if (settings.streamed_video_format.videoCodec == VideoCodec::H264) {
+        return create_rpi_v4l2_h264_encoder(settings);
+      } else {
+        return createSwEncoder(settings);
+      }
+    } else if (platform.is_rock()) {
+      return createRockchipEncoderPipeline(settings);
+    } else {
+      return createSwEncoder(settings);
+    }
+  }
+}
+
 /**
  * For V4l2 Cameras that do raw YUV (or RGB) we use a sw encoder.
  * This one has no custom resolution(s) yet.
@@ -625,6 +644,15 @@ static std::string createV4l2SrcRawAndSwEncodeStream(
   // For some reason gstreamer can't automatically figure things out here
   //ss << "video/x-raw, format=I420 ! ";
   ss << createSwEncoder(settings);
+  return ss.str();
+}
+
+static std::string createGSTIRStream(
+	  const OHDPlatform& platform, const CameraSettings& settings) {
+  std::stringstream ss;
+  ss << "gstirsrc ! ";
+  ss << "videoconvert ! ";
+  ss << createHwOrSwEncoder(platform, settings);
   return ss.str();
 }
 // ------------- crateXXXStream end  -------------
@@ -729,17 +757,7 @@ static std::string createDummyStreamX(const OHDPlatform& platform,
       settings.streamed_video_format.width,
       settings.streamed_video_format.height,
       settings.streamed_video_format.framerate);
-  if (settings.force_sw_encode) {
-    ss << createSwEncoder(settings);
-  } else {
-    if (platform.is_rpi()) {
-      ss << create_rpi_v4l2_h264_encoder(settings);
-    } else if (platform.is_rock()) {
-      ss << createRockchipEncoderPipeline(settings);
-    } else {
-      ss << createSwEncoder(settings);
-    }
-  }
+  ss << createHwOrSwEncoder(platform, settings);
   // since the primary purpose here is testing, use sw encoder, which is always
   // guaranteed to work
   // ss << createSwEncoder(settings);
@@ -796,21 +814,7 @@ static std::string create_dummy_filesrc_stream(const OHDPlatform& platform,
                       settings.streamed_video_format.framerate);
   }
   // ss<<createSwEncoder(settings);
-  if (settings.force_sw_encode) {
-    ss << createSwEncoder(settings);
-  } else {
-    if (platform.is_rpi()) {
-      if (settings.streamed_video_format.videoCodec == VideoCodec::H264) {
-        ss << create_rpi_v4l2_h264_encoder(settings);
-      } else {
-        ss << createSwEncoder(settings);
-      }
-    } else if (platform.is_rock()) {
-      ss << createRockchipEncoderPipeline(settings);
-    } else {
-      ss << createSwEncoder(settings);
-    }
-  }
+  ss << createHwOrSwEncoder(platform, settings);
   // ss<<"qtdemux ! queue ! h264parse config-interval=-1 !
   // video/x-h264,stream-format=byte-stream,alignment=au !";
   return ss.str();
