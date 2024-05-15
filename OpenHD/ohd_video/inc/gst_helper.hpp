@@ -667,7 +667,7 @@ static std::string createOutputUdpLocalhost(const int udpOutPort) {
 static std::string createOutputAppSink() {
   // @wait-on-eos: set to false since when terminating, we don't care if all
   // buffers of appsink have been consumed or not.
-  return " appsink drop=true name=out_appsink wait-on-eos=false";
+  return " appsink drop=true name=out_appsink wait-on-eos=false sync=false";
 }
 
 // Needs to match below
