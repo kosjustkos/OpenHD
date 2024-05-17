@@ -116,7 +116,7 @@ std::string GStreamerStream::create_source_encode_pipeline(
     const auto v4l2_device_name =
         get_v4l2_device_name_string(camera.usb_v4l2_device_number);
     pipeline << OHDGstHelper::createV4l2SrcRawAndSwEncodeStream(
-        v4l2_device_name, setting);
+        OHDPlatform::instance(), v4l2_device_name, setting);
   } else if (camera.camera_type == X_CAM_TYPE_DUMMY_SW) {
     pipeline << OHDGstHelper::createDummyStreamX(OHDPlatform::instance(),
                                                  setting);

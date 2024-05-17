@@ -632,18 +632,23 @@ static std::string createHwOrSwEncoder(const OHDPlatform& platform,
  * This one has no custom resolution(s) yet.
  */
 static std::string createV4l2SrcRawAndSwEncodeStream(
-    const std::string& device_node, const CameraSettings& settings) {
+    const OHDPlatform& platform, const std::string& device_node, const CameraSettings& settings) {
   std::stringstream ss;
   ss << fmt::format("v4l2src device={} ! ", device_node);
   ss << "image/jpeg";
   ss << gst_v4l2_width_height_fps_unless_omit(settings);
-  ss << " ! jpegparse ! jpegdec ! ";
+  ss << " ! jpegparse ! ";
+  if (platform.is_rock() && !settings.force_sw_encode) {
+    ss << "mppjpegdec ! ";
+  } else {
+    ss << "jpegdec ! ";
+  }
   ss << "videoconvert ! ";
   // Add a queue here. With sw we are not low latency anyways.
   //ss << "queue ! ";
   // For some reason gstreamer can't automatically figure things out here
   //ss << "video/x-raw, format=I420 ! ";
-  ss << createSwEncoder(settings);
+  ss << createHwOrSwEncoder(platform, settings);
   return ss.str();
 }
 
