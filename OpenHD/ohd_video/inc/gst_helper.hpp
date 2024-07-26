@@ -18,6 +18,13 @@
 #include "openhd_spdlog_include.h"
 #include "openhd_util_filesystem.h"
 
+
+// This is intended to be a sym link to some device in /dev directory.
+// This approach addresses the issue that there could be other USB cameras
+// and we should be able to choose which one to use.
+const char* const CAMERA_DEVICE = "/usr/local/share/openhd_device";
+
+
 // #define EXPERIMENTAL_USE_OPENH264_ENCODER
 
 /**
@@ -530,7 +537,7 @@ static std::string createRockchipEncoderPipeline(
 static std::string createRockchipV4L2Pipeline(const int video_dev,
                                               const int framerate) {
   std::stringstream ss;
-  ss << "v4l2src device=/dev/video" << video_dev
+  ss << "v4l2src device=" << CAMERA_DEVICE
      << " io-mode=auto do-timestamp=true ! image/jpeg, ";
   ss << "framerate=" << framerate << "/1 ! jpegparse ! mppjpegdec ! video/x-raw, format=NV12 ! ";
   return ss.str();
